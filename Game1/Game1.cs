@@ -1,6 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
+using System.Collections.Generic;
 
 namespace Game1
 {
@@ -11,6 +13,9 @@ namespace Game1
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+        Texture2D sprite;
+        float rot;
+        Vector2 offset;
 
         public Game1()
         {
@@ -26,7 +31,8 @@ namespace Game1
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
+            rot = 0;
+            offset = new Vector2();
 
             base.Initialize();
         }
@@ -39,8 +45,7 @@ namespace Game1
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
-
-            // TODO: use this.Content to load your game content here
+            sprite = Content.Load<Texture2D>("FeelsBadMan");
         }
 
         /// <summary>
@@ -62,7 +67,10 @@ namespace Game1
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            // TODO: Add your update logic here
+            rot += (float)(gameTime.ElapsedGameTime.TotalMilliseconds / 1000);
+
+            //offset.X = (float)(10 * Math.Cos(gameTime.TotalGameTime.TotalMilliseconds / 100));
+            //offset.Y = (float)(10 * Math.Sin(gameTime.TotalGameTime.TotalMilliseconds / 100));
 
             base.Update(gameTime);
         }
@@ -75,7 +83,27 @@ namespace Game1
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            // TODO: Add your drawing code here
+            spriteBatch.Begin();
+            var pos = new Vector2();
+            var scale = new Vector2(0.03f, 0.03f);
+            for (int i = 0; i < 271; i++)
+            {
+                for (int j = 0; j < 196; j++)
+                {
+                    pos.X = i * 2;
+                    pos.Y = j * 2;
+                    spriteBatch.Draw(
+                        texture: sprite, 
+                        position: pos + offset, 
+                        color: Color.White,
+                        rotation: rot,
+                        scale: scale
+                    );
+                }
+            }
+            
+
+            spriteBatch.End();
 
             base.Draw(gameTime);
         }
