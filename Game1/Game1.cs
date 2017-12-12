@@ -13,10 +13,12 @@ namespace Game1
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-        Texture2D sprite;
-        float rot;
-        Vector2 offset;
-
+        Texture2D texture;
+        List<Sprite> sprites;
+        int frames;
+        double time;
+        string frameString;
+        SpriteFont arial;
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -31,9 +33,11 @@ namespace Game1
         /// </summary>
         protected override void Initialize()
         {
-            rot = 0;
-            offset = new Vector2();
-
+            frames = 0;
+            frameString = "";
+            sprites = new List<Sprite>();
+            graphics.PreferredBackBufferWidth = 854;
+            graphics.PreferredBackBufferHeight = 480;
             base.Initialize();
         }
 
@@ -45,7 +49,28 @@ namespace Game1
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
-            sprite = Content.Load<Texture2D>("FeelsBadMan");
+            texture = Content.Load<Texture2D>("FeelsBadMan");
+            arial = Content.Load<SpriteFont>("Arial");
+            LateInit();
+        }
+
+        private void LateInit()
+        {
+            var pos = new Vector2();
+            var scale = new Vector2(0.03f, 0.03f);
+            var rot = 0.0001f;
+            Sprite sprite;
+            for (int i = 0; i < 271; i++)
+            {
+                for (int j = 0; j < 196; j++)
+                {
+                    pos.X = i * 2;
+                    pos.Y = j * 2;
+                    sprite = new Sprite(texture, pos, scale);
+                    sprite.RotSpeed = rot;
+                    sprites.Add(sprite);
+                }
+            }
         }
 
         /// <summary>
@@ -67,10 +92,11 @@ namespace Game1
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            rot += (float)(gameTime.ElapsedGameTime.TotalMilliseconds / 1000);
-
-            //offset.X = (float)(10 * Math.Cos(gameTime.TotalGameTime.TotalMilliseconds / 100));
-            //offset.Y = (float)(10 * Math.Sin(gameTime.TotalGameTime.TotalMilliseconds / 100));
+            foreach (var sprite in sprites)
+            {
+                sprite.Update(gameTime);
+            }
+          
 
             base.Update(gameTime);
         }
@@ -81,27 +107,29 @@ namespace Game1
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
+            time += gameTime.ElapsedGameTime.TotalSeconds;
+            if (time < 1)
+            {
+                frames += 1;
+            }
+            else
+            {
+                frameString = frames.ToString();
+                frames = 0;
+                time = 0;
+                
+            }
+
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             spriteBatch.Begin();
-            var pos = new Vector2();
-            var scale = new Vector2(0.03f, 0.03f);
-            for (int i = 0; i < 271; i++)
+
+            foreach (var sprite in sprites)
             {
-                for (int j = 0; j < 196; j++)
-                {
-                    pos.X = i * 2;
-                    pos.Y = j * 2;
-                    spriteBatch.Draw(
-                        texture: sprite, 
-                        position: pos + offset, 
-                        color: Color.White,
-                        rotation: rot,
-                        scale: scale
-                    );
-                }
+                sprite.Draw(spriteBatch);
             }
-            
+
+            spriteBatch.DrawString(arial, frameString, new Vector2(50, 50), Color.White);
 
             spriteBatch.End();
 
